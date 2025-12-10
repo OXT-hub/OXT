@@ -17,7 +17,7 @@
 </head>
 <body>
   <lottie-player
-    src="oxt-logo.json"
+    src="Logo animation.json"
     background="transparent"
     speed="1"
     autoplay
