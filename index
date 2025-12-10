@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OXT</title>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #000000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <lottie-player
+    src="oxt-logo.json"
+    background="transparent"
+    speed="1"
+    autoplay
+    loop
+    style="width: 400px; height: 400px;">
+  </lottie-player>
+</body>
+</html>
