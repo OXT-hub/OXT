@@ -57,8 +57,13 @@
         // Wide screens: fit the whole frame. Tall screens: enlarge so the
         // signature fills the width.
         var scale = W >= H ? Math.min(W / vw, H / vh) : Math.min(1.85 * W / vw, H / vh);
+        // Put the centre of the symbol's loops (not the whole frame) at the
+        // centre of the screen, and shrink if needed so the stem still fits.
+        var cx = vw * 0.5, cy = vh * 0.2884;        // loops centre in the video
+        var stemBelow = vh * 0.8833 - cy;           // stem tip distance below it
+        scale = Math.min(scale, (H / 2) * 0.94 / stemBelow);
         var dw = vw * scale, dh = vh * scale;
-        var dx = (W - dw) / 2, dy = (H - dh) / 2;
+        var dx = W / 2 - cx * scale, dy = H / 2 - cy * scale;
         ctx.drawImage(video, 0, 0, 4, 4, 0, 0, W, H);
         ctx.drawImage(video, dx, dy, dw, dh);
       }
