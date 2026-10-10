@@ -11,24 +11,15 @@
       background: #ffffff;
       overflow: hidden;
     }
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    video {
+    video, canvas {
+      position: fixed;
+      inset: 0;
       width: 100vw;
       height: 100vh;
-      object-fit: contain;
       display: block;
     }
-    /* On tall/narrow screens, scale the video up so the signature fills the width */
-    @media (max-aspect-ratio: 1/1) {
-      video {
-        width: 185vw;
-        height: auto;
-        flex-shrink: 0;
-      }
+    video {
+      object-fit: contain;
     }
   </style>
 </head>
@@ -43,25 +34,48 @@
     <source src="OXT%20Title%20Signature%20LOTTIE%20INVERT.mp4" type="video/mp4" />
     <source src="OXT%20Title%20Signature%20LOTTIE%20INVERT.webm" type="video/webm" />
   </video>
+  <canvas id="stage"></canvas>
   <script>
-    // Keep the page background in step with the video's white-to-black invert,
-    // so the letterbox space around the video always matches it.
+    // Every frame, paint the whole screen from the video itself: the edges are
+    // filled by stretching the frame's corner pixels, then the frame is drawn on
+    // top. Edges and video come from the same frame, so the fade always matches.
     (function () {
       var video = document.getElementById('signature');
-      var canvas = document.createElement('canvas');
-      canvas.width = canvas.height = 1;
-      var ctx = canvas.getContext('2d', { willReadFrequently: true });
-      function sync() {
-        if (video.readyState >= 2) {
-          try {
-            ctx.drawImage(video, 0, 0, 8, 8, 0, 0, 1, 1);
-            var p = ctx.getImageData(0, 0, 1, 1).data;
-            document.body.style.background = 'rgb(' + p[0] + ',' + p[1] + ',' + p[2] + ')';
-          } catch (e) {}
-        }
-        requestAnimationFrame(sync);
+      var canvas = document.getElementById('stage');
+      var ctx = canvas.getContext('2d', { alpha: false });
+      var W = 0, H = 0;
+
+      function resize() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = canvas.width = Math.round(window.innerWidth * dpr);
+        H = canvas.height = Math.round(window.innerHeight * dpr);
       }
-      requestAnimationFrame(sync);
+
+      function draw() {
+        var vw = video.videoWidth, vh = video.videoHeight;
+        if (!vw || video.readyState < 2) return;
+        // Wide screens: fit the whole frame. Tall screens: enlarge so the
+        // signature fills the width.
+        var scale = W >= H ? Math.min(W / vw, H / vh) : Math.min(1.85 * W / vw, H / vh);
+        var dw = vw * scale, dh = vh * scale;
+        var dx = (W - dw) / 2, dy = (H - dh) / 2;
+        ctx.drawImage(video, 0, 0, 4, 4, 0, 0, W, H);
+        ctx.drawImage(video, dx, dy, dw, dh);
+      }
+
+      function loop() {
+        draw();
+        if (video.requestVideoFrameCallback) {
+          video.requestVideoFrameCallback(loop);
+        } else {
+          requestAnimationFrame(loop);
+        }
+      }
+
+      resize();
+      window.addEventListener('resize', function () { resize(); draw(); });
+      video.addEventListener('loadeddata', draw);
+      loop();
     })();
   </script>
 </body>
